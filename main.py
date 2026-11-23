@@ -1,42 +1,36 @@
-#!/usr/bin/env python3
-"""One Line, Zero Use: The Useless Superpower Sprint.
+"""One-line zero-use superpower entry for make.fun.
 
-make.fun bounty: u-daring-gecko-25-one-line-zero-use-the-useless-01ca1c68
-
-Writes a single original line to entry.txt inside the output directory
-(MAKEFUN_OUTPUT_DIR when set, otherwise /output). Standard library only,
-fully deterministic.
+Writes a single original line to the entry file.
+The line is validated before it is written, so a bad line fails loudly.
 """
 
 import os
-import sys
 
 LINE = "I can sense exactly when the elevator is about to arrive — but only in buildings I will never visit again."
 
-MIN_LENGTH = 1
-MAX_LENGTH = 200
+MAX_CHARS = 200
 
 
-def validate(line):
-    stripped = line.strip()
-    if not (MIN_LENGTH <= len(stripped) <= MAX_LENGTH):
-        raise ValueError(f"line is {len(stripped)} chars, must be 1-{MAX_LENGTH}")
-    if "\n" in stripped or "\r" in stripped:
+def validate(line: str) -> str:
+    """Enforce the competition's line rules: 1..MAX_CHARS, single line, non-blank."""
+    if not line or not line.strip():
+        raise ValueError("line must not be empty or only whitespace")
+    if "\n" in line or "\r" in line:
         raise ValueError("line must be a single line")
-    if not stripped:
-        raise ValueError("line must not be only whitespace")
+    if len(line) > MAX_CHARS:
+        raise ValueError(f"line is {len(line)} chars, over the {MAX_CHARS}-char limit")
+    return line
 
 
-def main():
-    validate(LINE)
-    output_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
-    os.makedirs(output_dir, exist_ok=True)
-    path = os.path.join(output_dir, "entry.txt")
-    with open(path, "w", encoding="utf-8", newline="\n") as handle:
-        handle.write(LINE + "\n")
-    print(f"Wrote {len(LINE)} characters to {path}")
-    return 0
+def main() -> None:
+    line = validate(LINE)
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR") or "/output"
+    out_path = os.path.join(out_dir, "entry.txt")
+    os.makedirs(out_dir, exist_ok=True)
+    with open(out_path, "w", encoding="utf-8") as f:
+        f.write(line + "\n")
+    print(f"wrote {len(line)} chars to {out_path}")
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+    main()
